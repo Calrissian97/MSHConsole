@@ -558,10 +558,17 @@ public:
                 }
             }
             else if (option == 2)
+            {
                 if (!MSHFile.ImportMODL())
                     std::cout << "\n Error reading file!\n";
+            }
             else if (option == 3)
-                std::cout << "\n Not ready yet!\n";
+            {
+                unsigned short i = GetUserInput<unsigned short>("\n Enter model index:");
+                if (i > 0 && i <= MSHFile.ModelCount)
+                    if (!MSHFile.ExportMODL(i))
+                        std::cout << "\n Error writing file!\n";
+            }
             else if (option == 4)
             {
                 bool IsGood = false;

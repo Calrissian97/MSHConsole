@@ -105,6 +105,9 @@ public:
 	// Imports MODL chunk
 	bool ImportMODL();
 
+	// Exports MODL chunk
+	bool ExportMODL(unsigned short ModelIndex);
+
 private:
 
 	// String which holds the filename
@@ -919,7 +922,7 @@ inline std::vector<unsigned char> MSH::Create_MODL_Chunk(Model MODL)
 					if (MODL.Segments.at(C).CLRB_OG)
 					{
 						// Find CLRB chunk position
-						size_t pos2 = chunk.find("CLRB", std::abs((signed long long)MODL.MODL_Position - MODL.Segments.at(C).SEGM_Position));
+						size_t pos2 = chunk.find("CLRB", std::abs(signed long long(MODL.MODL_Position) - signed long long (MODL.Segments.at(C).SEGM_Position)));
 	
 						if (C != MODL.Segments.size() - 1)
 						{
@@ -958,12 +961,12 @@ inline std::vector<unsigned char> MSH::Create_MODL_Chunk(Model MODL)
 							CLRB[8 + D] = MODL.Segments.at(C).CLRB[D];
 	
 						// Find insertion point
-						size_t pos2 = chunk.find("UV0L", std::abs((signed long long)MODL.MODL_Position - MODL.Segments.at(C).SEGM_Position));
+						size_t pos2 = chunk.find("UV0L", std::abs(signed long long(MODL.MODL_Position) - signed long long (MODL.Segments.at(C).SEGM_Position)));
 	
 						if (C != MODL.Segments.size() - 1)
 						{
 							// If not last segment
-							if (pos2 < (std::abs((signed long long)MODL.MODL_Position - MODL.Segments.at(C + 1).SEGM_Position)))
+							if (pos2 < (std::abs(signed long long(MODL.MODL_Position) - signed long long (MODL.Segments.at(C + 1).SEGM_Position))))
 							{
 								if (pos2 > Size) // Only if model has UVs should it have vertex colors
 								{
@@ -991,7 +994,7 @@ inline std::vector<unsigned char> MSH::Create_MODL_Chunk(Model MODL)
 										MODEL[pos3 + C] = (unsigned char)GEOMSize[C];
 
 									// This should be the SEGM position
-									size_t pos4 = std::abs((signed long long)MODL.MODL_Position - MODL.Segments.at(C).SEGM_Position);
+									size_t pos4 = std::abs(signed long long(MODL.MODL_Position) - signed long long(MODL.Segments.at(C).SEGM_Position));
 
 									// Resize the SEGM header
 									char SEGMSize[4] = { '\x00', '\x00', '\x00', '\x00' };
@@ -1047,7 +1050,7 @@ inline std::vector<unsigned char> MSH::Create_MODL_Chunk(Model MODL)
 									MODEL[pos3 + C] = (unsigned char)GEOMSize[C];
 
 								// This should be the SEGM position
-								size_t pos4 = std::abs((signed long long)MODL.MODL_Position - MODL.Segments.at(C).SEGM_Position);
+								size_t pos4 = std::abs(signed long long(MODL.MODL_Position) - signed long long(MODL.Segments.at(C).SEGM_Position));
 
 								// Resize the SEGM header
 								char SEGMSize[4] = { '\x00', '\x00', '\x00', '\x00' };
@@ -1072,7 +1075,7 @@ inline std::vector<unsigned char> MSH::Create_MODL_Chunk(Model MODL)
 					{
 						// But if there was one initially then we have to delete it!
 						// Find CLRB chunk position
-						size_t pos2 = chunk.find("CLRB", std::abs((signed long long)MODL.MODL_Position - MODL.Segments.at(C).SEGM_Position));
+						size_t pos2 = chunk.find("CLRB", std::abs(signed long long(MODL.MODL_Position) - signed long long(MODL.Segments.at(C).SEGM_Position)));
 
 						// Erase 12 bytes
 						MODEL.erase(MODEL.begin() + pos2, MODEL.begin() + pos2 + 12);
@@ -1098,7 +1101,7 @@ inline std::vector<unsigned char> MSH::Create_MODL_Chunk(Model MODL)
 							MODEL[pos3 + C] = (unsigned char)GEOMSize[C];
 
 						// This should be the SEGM position
-						size_t pos4 = std::abs((signed long long)MODL.MODL_Position - MODL.Segments.at(C).SEGM_Position);
+						size_t pos4 = std::abs(signed long long(MODL.MODL_Position) - signed long long(MODL.Segments.at(C).SEGM_Position));
 
 						// Resize the SEGM header
 						char SEGMSize[4] = { '\x00', '\x00', '\x00', '\x00' };
@@ -2983,7 +2986,7 @@ inline void MSH::PrepMatForWrite()
 	size_t end = Models.at(0).MODL_Position - 4;
 
 	signed long long MaterialSection = end - start;
-	signed long long NewMatSection = (MATD_Chunks.size() + MATL.size());
+	signed long long NewMatSection = (signed long long(MATD_Chunks.size()) + signed long long(MATL.size()));
 	signed long long difference = MaterialSection - NewMatSection;
 
 	// If NewMatSection is smaller
@@ -3263,9 +3266,9 @@ inline bool MSH::ImportMODL()
 		// If input can be read, continue
 		if (std::cin >> MODLFileName)
 		{
-			// Check if filename has .msh extension, if not add it
-			if (!std::regex_match(MODLFileName, std::regex("(.*)(\\.msh)")))
-				FileName = MODLFileName + ".modl";
+			// Check if filename has .modl extension, if not add it
+			if (!std::regex_match(MODLFileName, std::regex("(.*)(\\.modl)")))
+				MODLFileName = MODLFileName + ".modl";
 
 			// Check if file exists
 			std::ifstream TestFile(MODLFileName.c_str());
@@ -3308,7 +3311,7 @@ inline bool MSH::ImportMODL()
 	// Set insertion point right after last MODL chunk
 	size_t InsertionPoint = Models.at(ModelCount - 1).MODL_Position + 4 + Models.at(ModelCount - 1).MODL_Size;
 	NewMODL.MODL_Position = InsertionPoint + 4;
-	size_t pos = NewMODL.MODL_Position;
+	size_t pos = 4;
 
 	// Create substring of the MODL chunk size 
 	std::string_view temp = MODLsv.substr(pos, 4);
@@ -3321,7 +3324,7 @@ inline bool MSH::ImportMODL()
 
 	// Increment pos to skip MTYP header and size (always 4 bytes)
 	pos += 12; // Now we're at MTYP
-	NewMODL.MTYP_Position = pos + NewMODL.MODL_Position - 4;
+	NewMODL.MTYP_Position = pos + InsertionPoint;
 
 	// Create substring of the MODL MTYP  
 	std::string_view temp2 = MODLsv.substr(pos, 4);
@@ -3334,55 +3337,89 @@ inline bool MSH::ImportMODL()
 
 	// Increment pos to skip MNDX header and size (also always 4 bytes)
 	pos += 12; // Now we're at MNDX
-	NewMODL.MNDX_Position = pos + NewMODL.MODL_Position - 4;
+	NewMODL.MNDX_Position = pos + InsertionPoint;
 	NewMODL.MNDX = ModelCount + 1;
 
 	// Increment pos to go to Name chunk size
 	pos += 8; // Now at Name size
-	NewMODL.Name_Position = pos + NewMODL.MODL_Position - 4;
+	NewMODL.Name_Position = pos + InsertionPoint;
 
 	// Create substring of the MODL Name size  
 	std::string_view temp4 = MODLsv.substr(pos, 4);
-	unsigned short NameLength = 0;
 
 	// Write to a std::string stream the MODL MNDX
 	std::stringstream v;
 	v.setf(std::ios::binary);
 	v.write(temp4.data(), 4);
-	v.read(reinterpret_cast<char*>(&NameLength), 4);
+	v.read(reinterpret_cast<char*>(&NewMODL.Name_Size), 4);
 
 	// Increment pos to start of name
 	pos += 4;
 
-	char* MODLName = new char[NameLength];
+	char* MODLName = new char[NewMODL.Name_Size];
 
 	// Now read the name from that length we got
-	std::string_view temp5 = MODLsv.substr(pos, NameLength);
+	std::string_view temp5 = MODLsv.substr(pos, NewMODL.Name_Size);
 
 	std::stringstream w;
 	w.setf(std::ios::binary);
-	w.write(temp5.data(), NameLength);
-	w.read(MODLName, NameLength);
+	w.write(temp5.data(), NewMODL.Name_Size);
+	w.read(MODLName, NewMODL.Name_Size);
 
 	// Since we treated the string as an array we have to push back to do it "officially"
 	std::string Name;
-	for (unsigned short S = 0; S < NameLength; S++)
+	for (unsigned short S = 0; S < NewMODL.Name_Size; S++)
 		Name.push_back(MODLName[S]);
 
 	delete[] MODLName;
 
 	NewMODL.Name = Name;
-	NewMODL.Name_Size = NameLength;
-	NewMODL.OG_Value[1] = NameLength;
+	NewMODL.OG_Value[1] = NewMODL.Name_Size;
+
+	// Check and rename if duplicate name
+	for (unsigned short i = 0; i < ModelCount; i++)
+	{
+		if (NewMODL.Name == Models.at(i).Name)
+		{
+
+			std::string TempName;
+			std::vector<unsigned char> Nom;
+			for (unsigned short ch = 0; ch < NewMODL.Name_Size; ch++)
+				Nom.push_back(NewMODL.Name.at(ch));
+
+			Nom.erase(std::find(Nom.begin(), Nom.end(), '\0'), Nom.end());
+			Nom.push_back('2');
+			PadString(Nom);
+
+			signed int NewSize = Nom.size();
+			signed int OldSize = NewMODL.Name_Size;
+			signed int Diff = OldSize - NewSize;
+
+			// If New Size is smaller than original
+			if (Diff > 0)
+				NewMODL.MODL_Size = NewMODL.MODL_Size -= std::abs(Diff);
+			// If New Size is larger than original
+			else if (Diff < 0)
+				NewMODL.MODL_Size = NewMODL.MODL_Size += std::abs(Diff);
+
+			for (unsigned short ch = 0; ch < Nom.size(); ch++)
+				TempName.push_back(Nom.at(ch));
+
+			NewMODL.Name = TempName;
+			NewMODL.Name_Size = Nom.size();
+			NewMODL.CHANGED[1] = true;
+			break;
+		}
+	}
 
 	// Increment pos the length of the name
-	pos += NameLength;
+	pos += NewMODL.OG_Value[1];
 
 	pos = MODLsv.find("PRNT");
 	if (pos < MODLSize)
 	{
 		pos += 4; // Skip to name size
-		NewMODL.PRNT_Position = pos + NewMODL.MODL_Position - 4;
+		NewMODL.PRNT_Position = pos + InsertionPoint;
 		NewMODL.PRNT_Index = 1;
 		
 		// Create substd::string of the model name size 
@@ -3408,7 +3445,7 @@ inline bool MSH::ImportMODL()
 		NewMODL.CHANGED[0] = true;
 		NewMODL.PRNT = Models.at(0).Name;
 		NewMODL.PRNT_Size = Models.at(0).Name_Size;
-		pos = 8;
+		pos = 4;
 	}
 
 	pos = MODLsv.find("FLGS");
@@ -3418,20 +3455,20 @@ inline bool MSH::ImportMODL()
 		pos += 8;
 
 		// Record FLGS 
-		NewMODL.FLGS_Position = pos + NewMODL.MODL_Position - 4;
+		NewMODL.FLGS_Position = pos + InsertionPoint;
 		NewMODL.FLGS = bool(MODLsv.at(pos));
 		NewMODL.OG_Value[2] = MODLsv.at(pos);
 		NewMODL.CHANGED[2] = true;
 	}
 	else
-		pos = 8;
+		pos = 4;
 
 	pos = MODLsv.find("GEOM");
 	if (pos < MODLSize)
 	{
 		// Skip header and record position at GEOM size
 		pos += 4;
-		NewMODL.GEOM_Position = pos + NewMODL.MODL_Position - 4;
+		NewMODL.GEOM_Position = pos + InsertionPoint;
 
 		// Create substring of the GEOM chunk size 
 		std::string_view geomsv = MODLsv.substr(pos, 4);
@@ -3444,14 +3481,14 @@ inline bool MSH::ImportMODL()
 		pos += 4;
 	}
 	else
-		pos = 8;
+		pos = 4;
 
 	pos = MODLsv.find("CLTH");
 	if (pos < MODLSize)
 	{
 		// Skip header and record position at CLTH size
 		pos += 4;
-		NewMODL.CLTH_Position = pos + NewMODL.MODL_Position - 4;
+		NewMODL.CLTH_Position = pos + InsertionPoint;
 		NewMODL.CLTH = true;
 
 		// Create substring of the Cloth chunk size 
@@ -3465,7 +3502,7 @@ inline bool MSH::ImportMODL()
 
 		pos += 8; // Skip past CLTH size and CTEX header to CTEX name size position
 
-		NewMODL.CTEX_Position = pos + NewMODL.MODL_Position - 4;
+		NewMODL.CTEX_Position = pos + InsertionPoint;
 
 		// Create substring of the Cloth texture name size 
 		std::string_view tempsv3 = MODLsv.substr(pos, 4);
@@ -3503,7 +3540,7 @@ inline bool MSH::ImportMODL()
 	else
 		NewMODL.CLTH = false;
 
-	pos = 8;
+	pos = 4;
 	pos = MODLsv.find("SEGM", pos);
 	while (pos < MODLSize)
 	{
@@ -3512,7 +3549,7 @@ inline bool MSH::ImportMODL()
 
 		// Skip to size and record position to Segment
 		pos += 4;
-		NewSEGM.SEGM_Position = pos;
+		NewSEGM.SEGM_Position = pos + InsertionPoint;
 
 		// Record size
 		std::string_view temp = MODLsv.substr(pos, 4);
@@ -3525,7 +3562,7 @@ inline bool MSH::ImportMODL()
 
 		size_t matipos = GetChunk("MATI", pos);
 		matipos += 8; // Skip to MATI value
-		NewSEGM.MATI_Position = matipos;
+		NewSEGM.MATI_Position = matipos + InsertionPoint;
 
 		// Create substring of the MATI
 		std::string_view temp3 = MODLsv.substr(matipos, 4);
@@ -3554,34 +3591,90 @@ inline bool MSH::ImportMODL()
 	DataBufferAfter.reserve(Size);
 
 	for (size_t N = 0; N < InsertionPoint; N++)
-		DataBufferBefore.push_back(sv.at(N));
+		DataBufferBefore.push_back(Data[N]);
 
 	for (size_t N = InsertionPoint; N < Size; N++)
-		DataBufferAfter.push_back(sv.at(N));
+		DataBufferAfter.push_back(Data[N]);
 
 	delete[] Data;
-	Size = Size + MODLSize;
+	Size = DataBufferBefore.size() + DataBufferAfter.size() + MODLSize;
 	Data = new unsigned char[Size];
 
 	for (size_t N = 0; N < DataBufferBefore.size(); N++)
 		Data[N] = DataBufferBefore.at(N);
-
+	sv = std::string_view((char*)Data, Size);
 	for (size_t N = 0; N < MODLSize; N++)
 		Data[InsertionPoint + N] = MODLBuffer[N];
-
+	sv = std::string_view((char*)Data, Size);
 	for (size_t N = 0; N < DataBufferAfter.size(); N++)
 		Data[InsertionPoint + MODLSize + N] = DataBufferAfter.at(N);
-
+	sv = std::string_view((char*)Data, Size);
 	delete[] MODLBuffer;
 	DataBufferBefore.clear();
 	DataBufferAfter.clear();
-	Models.push_back(NewMODL);
-	ModelCount++;
-	sv = std::string_view((char*)Data);
+	sv = std::string_view((char*)Data, Size);
 	NewMODL.CHANGED = true;
 	CHANGED = true;
+	Models.push_back(NewMODL);
+	ModelCount++;
 
 	return true;
+}
+
+// Exports a MODL chunk
+inline bool MSH::ExportMODL(unsigned short ModelIndex)
+{
+	std::string MODLFileName;
+	bool Valid_Name = false;
+	do
+	{
+		// Prompt user for filename of msh
+		std::cout << " Enter MODL chunk filename: ";
+
+		// If input can be read, continue
+		if (std::cin >> MODLFileName)
+		{
+			// Check if filename has .modl extension, if not add it
+			if (!std::regex_match(MODLFileName, std::regex("(.*)(\\.modl)")))
+				MODLFileName = MODLFileName + ".modl";
+
+			// Check if file exists
+			std::ifstream TestFile(MODLFileName.c_str());
+			if (TestFile.is_open())
+			{
+				TestFile.close();
+				std::cout << "File already exists! Overwrite? Y/N: ";
+				char OW;
+				std::cin.ignore();
+				OW = std::cin.get();
+				OW = std::tolower(OW);
+				if (OW == 'y')
+					Valid_Name = true;
+			}
+			else
+				Valid_Name = true;
+		}
+		else
+			std::cout << " Error with input, please try again!\n\n";
+	} while (!Valid_Name);
+
+	// Open File
+	std::ofstream OutFile(MODLFileName.c_str(), std::ios::out | std::ios::binary);
+	if (!OutFile.is_open())
+		return false;
+	else
+	{
+		size_t Start = Models.at(ModelIndex - 1).MODL_Position - 4;
+		size_t Stop = Start + 8 + Models.at(ModelIndex - 1).MODL_Size;
+		size_t MSize = Models.at(ModelIndex - 1).MODL_Size + 8;
+
+		std::string_view MODLsv = sv.substr(Start, MSize);
+		OutFile.write(MODLsv.data(), MSize);
+		OutFile.close();
+
+		std::cout << "\n MODL chunk successfully exported!";
+		return true;
+	}
 }
 
 // Renames the selected material
