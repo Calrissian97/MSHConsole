@@ -2433,29 +2433,34 @@ inline void MSH::ReadSEGM()
 			{
 				while (pos < Models.at(C + 1).MODL_Position)
 				{
-					// Keep doing this while still before next MODL chunk
-					Segment NewSEGM;
+					if (pos != 0)
+					{
+						// Keep doing this while still before next MODL chunk
+						Segment NewSEGM;
 
-					// Skip to size and record position to Segment
-					pos += 4;
-					NewSEGM.SEGM_Position = pos;
+						// Skip to size and record position to Segment
+						pos += 4;
+						NewSEGM.SEGM_Position = pos;
 
-					// Record size
-					std::string_view temp = sv.substr(pos, 4);
+						// Record size
+						std::string_view temp = sv.substr(pos, 4);
 
-					// Write to a std::string stream the SEGM size, then record it
-					std::stringstream s;
-					s.setf(std::ios::binary);
-					s.write(temp.data(), 4);
-					s.read(reinterpret_cast<char*>(&NewSEGM.SEGM_Size), 4);
+						// Write to a std::string stream the SEGM size, then record it
+						std::stringstream s;
+						s.setf(std::ios::binary);
+						s.write(temp.data(), 4);
+						s.read(reinterpret_cast<char*>(&NewSEGM.SEGM_Size), 4);
+						pos += 4;
+						AlreadyRead = pos;
 
+						// Push the segment to this MODL
+						Models.at(C).Segments.push_back(NewSEGM);
 
-					// Push the segment to this MODL
-					Models.at(C).Segments.push_back(NewSEGM);
-					AlreadyRead = pos;
-
-					// Now that we got everything for this segm, go to next one!
-					pos = GetChunk("SEGM", AlreadyRead);
+						// Now that we got everything for this segm, go to next one!
+						pos = GetChunk("SEGM", AlreadyRead);
+					}
+					else
+						break;
 				}
 			}
 			// Special case for last one
